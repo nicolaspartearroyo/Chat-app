@@ -1,28 +1,8 @@
 import React from 'react';
 import { GiftedChat } from "react-native-gifted-chat";
-import { View, Button, Text } from 'react-native';
+import { View, Button, Text, Platform } from 'react-native';
 
 export default class Chat extends React.Component {
-  //   constructor(props) {
-  //     super(props);
-  //     this.state = {
-  //       name: '',
-  //     }
-  //   }
-  //   render() {
-  //     let name = this.props.route.params.name;
-  //     this.props.navigation.setOptions({ title: name });
-  //     return (
-  //       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: this.props.route.params.backColor }}>
-  //         <Button
-  //           title="Go to Start"
-  //           onPress={() => this.props.navigation.navigate('Start')}
-  //         />
-  //       </View>
-  //     )
-  //   }
-  // }
-
   constructor() {
     super();
     this.state = {
@@ -54,6 +34,8 @@ export default class Chat extends React.Component {
   }
 
   render() {
+    let name = this.props.route.params.name;
+    this.props.navigation.setOptions({ title: name });
     return (
       <GiftedChat
         messages={this.state.messages}
