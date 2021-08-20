@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button, TextInput, ImageBackground, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Button, TextInput, ImageBackground, StyleSheet, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 
 export default class Start extends React.Component {
   constructor(props) {
@@ -25,10 +25,11 @@ export default class Start extends React.Component {
               onChangeText={(name) => this.setState({ name })}
               value={this.state.name}
               placeholder='Your Name'
+
             />
 
             <View>
-              <Text style={styles.colorChooseText}>Choose Background Color:</Text>
+              <Text style={styles.colorChooseText}>Choose your Color:</Text>
               <View style={styles.backColor}>
                 <TouchableOpacity
                   style={styles.colorOption1}
@@ -47,14 +48,20 @@ export default class Start extends React.Component {
                   onPress={() => this.setState({ backColor: '#B9C6AE' })}
                 />
               </View>
+
             </View>
             <TouchableOpacity style={styles.startBttn}
               onPress={() => this.props.navigation.navigate('Chat', { name: this.state.name, backColor: this.state.backColor })}
             >
               <Text style={styles.startText}>Start Chatting</Text>
             </TouchableOpacity>
+
           </View>
         </ImageBackground>
+
+        {Platform.OS === 'ios' ?
+          <KeyboardAvoidingView behavior="height" /> : null
+        }
       </View >
     )
   }
