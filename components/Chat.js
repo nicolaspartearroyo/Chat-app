@@ -2,6 +2,10 @@ import React from 'react';
 import { Bubble, GiftedChat } from "react-native-gifted-chat";
 import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native';
 
+//import firebase
+const firebase = require('firebase');
+require('firebase/firestore');
+
 export default class Chat extends React.Component {
   constructor() {
     super();
