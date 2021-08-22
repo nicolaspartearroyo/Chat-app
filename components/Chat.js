@@ -6,12 +6,33 @@ import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native
 const firebase = require('firebase');
 require('firebase/firestore');
 
+
+
+
+
 export default class Chat extends React.Component {
   constructor() {
     super();
     this.state = {
       messages: [],
     };
+
+    // Firebase config details
+    const firebaseConfig = {
+      apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
+      authDomain: "chat-app-c6812.firebaseapp.com",
+      projectId: "chat-app-c6812",
+      storageBucket: "chat-app-c6812.appspot.com",
+      messagingSenderId: "1010968703852",
+      appId: "1:1010968703852:web:1ec491fb0c71c4a89e3949",
+      measurementId: "G-CEMW2YZ5YL"
+    }
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    this.referenceChatMessages = firebase.firestore().collection("messages");
+
   }
 
   componentDidMount() {
