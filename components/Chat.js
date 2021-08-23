@@ -13,11 +13,9 @@ require('firebase/firestore');
 export default class Chat extends React.Component {
   constructor() {
     super();
-    this.state = {
-      messages: [],
-    };
 
-    // Firebase config details
+
+    // Firebase config 
     const firebaseConfig = {
       apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
       authDomain: "chat-app-c6812.firebaseapp.com",
@@ -30,10 +28,12 @@ export default class Chat extends React.Component {
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
+    this.referenceChatMessages = firebase.firestore().collection("chat-app");
 
-    this.referenceChatMessages = firebase.firestore().collection("messages");
-
-  }
+    this.state = {
+      messages: [],
+    }
+  };
 
   componentDidMount() {
     this.setState({
