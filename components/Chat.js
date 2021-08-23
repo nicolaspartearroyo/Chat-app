@@ -23,12 +23,81 @@ export default class Chat extends React.Component {
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    this.referenceChatMessages = firebase.firestore().collection("chat-app");
+    this.referenceChatMessages = firebase.firestore().collection("messages");
 
     this.state = {
       messages: [],
-    }
+      uid: 0,
+      user: {
+        _id: '',
+        name: '',
+      },
+    };
   }
+
+  componentDidMount() {
+    const { name } = this.props.route.params;
+    this.props.navigation.setOptions({ title: `${name}` });
+
+
+    // creates the user authentication
+    this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        firebase.auth().signInAnonymously();
+      }
+      // Update user state with active user
+
+      this.setState({
+        uid: user.uid,
+        messages: [],
+        user: {
+          _id: user.uid,
+          name: name,
+        }
+      });
+
+      this.unsubscribe = this.referenceChatMessages
+        .orderBy("createdAt", "desc")
+        .onSnapshot(this.onCollectionUpdate);
+    });
+
+    this.referenceChatMessages = firebase.firestore().collection('messages');
+    // Listen for collection changes
+    this.unsubscribe = this.referenceChatMessages.onSnapshot(this.onCollectionUpdate);
+  }
+
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
+  // Add messages 
+  addMessages() {
+    const message = this.state.messages[0];
+    // add a new messages to the collection
+    this.referenceChatMessages.add({
+      uid: this.state.uid,
+      _id: message._id,
+      createdAt: message.createdAt,
+      text: message.text || null,
+      user: message.user,
+      image: message.image || null,
+      location: message.location || null,
+    });
+  }
+
+
+  //Send Messages Function
+  onSend(messages = []) {
+    this.setState((previousState) => ({
+      messages: GiftedChat.append(previousState.messages, messages),
+    }),
+      // Call addMessages to saved on the server
+      () => {
+        this.addMessages();
+      })
+  }
+
 
   //retrieve data and store
   onCollectionUpdate = (querySnapshot) => {
@@ -49,50 +118,11 @@ export default class Chat extends React.Component {
     });
   };
 
-  // Add messages 
-  addMessages() {
-    const message = this.state.messages[0];
-    // add a new messages to the collection
-    this.referenceChatMessages.add({
-      uid: this.state.uid,
-      _id: message._id,
-      createdAt: message.createdAt,
-      text: message.text || null,
-      user: message.user,
-      image: message.image || null,
-      location: message.location || null,
-    });
-  }
-
-  componentDidMount() {
-    this.referenceChatMessages = firebase.firestore().collection('chat-app');
-    this.unsubscribe = this.referenceChatMessages.onSnapshot(this.onCollectionUpdate);
-    // Update user state with active user
-    this.setState({
-      uid: user.uid,
-      messages: [],
-      user: {
-        _id: user.uid,
-        name: name,
-      }
-    });
-  }
 
 
-  //Send Messages Function
-  onSend(messages = []) {
-    this.setState((previousState) => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }),
-      // Call addMessages to saved on the server
-      () => {
-        this.addMessages();
-      })
-  }
 
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
+
+
 
 
   renderBubble(props) {
