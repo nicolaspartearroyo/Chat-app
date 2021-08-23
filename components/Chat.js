@@ -23,6 +23,7 @@ export default class Chat extends React.Component {
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
+
     this.referenceChatMessages = firebase.firestore().collection("messages");
 
     this.state = {
@@ -36,8 +37,8 @@ export default class Chat extends React.Component {
   }
 
   componentDidMount() {
-    const { name } = this.props.route.params;
-    this.props.navigation.setOptions({ title: `${name}` });
+    let name = this.props.route.params;
+    this.props.navigation.setOptions({ title: name });
 
 
     // creates the user authentication
@@ -46,7 +47,6 @@ export default class Chat extends React.Component {
         firebase.auth().signInAnonymously();
       }
       // Update user state with active user
-
       this.setState({
         uid: user.uid,
         messages: [],
@@ -55,21 +55,33 @@ export default class Chat extends React.Component {
           name: name,
         }
       });
+      this.referenceChatMessages = firebase.firestore().collection('messages');
+      // Listen for collection changes
 
       this.unsubscribe = this.referenceChatMessages
         .orderBy("createdAt", "desc")
         .onSnapshot(this.onCollectionUpdate);
     });
-
-    this.referenceChatMessages = firebase.firestore().collection('messages');
-    // Listen for collection changes
-    this.unsubscribe = this.referenceChatMessages.onSnapshot(this.onCollectionUpdate);
   }
 
 
   componentWillUnmount() {
     this.unsubscribe();
   }
+
+  //Loads messages from AsyncStorage
+  async getMessages() {
+    let messages = '';
+    try {
+      messages = await AsyncStorage.getItem('messages') || [];
+      this.setState({
+        messages: JSON.parse(messages)
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
 
   // Add messages 
   addMessages() {
@@ -81,10 +93,30 @@ export default class Chat extends React.Component {
       createdAt: message.createdAt,
       text: message.text || null,
       user: message.user,
-      image: message.image || null,
-      location: message.location || null,
     });
   }
+
+  // Save Messages to local storage
+  async saveMessages() {
+    try {
+      await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  //Delete messages from AsyncStorage
+  async deleteMessages() {
+    try {
+      await AsyncStorage.removeItem('messages');
+      this.setState({
+        messages: []
+      })
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
 
 
   //Send Messages Function
@@ -116,14 +148,10 @@ export default class Chat extends React.Component {
         },
       });
     });
-  };
-
-
-
-
-
-
-
+    this.setState({
+      messages,
+    });
+  }
 
   renderBubble(props) {
     return (
@@ -133,7 +161,8 @@ export default class Chat extends React.Component {
           right: {
             backgroundColor: this.props.route.params.backColor
           }
-        }}
+        }
+        }
       />
     )
   }
