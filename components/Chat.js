@@ -6,14 +6,9 @@ import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native
 const firebase = require('firebase');
 require('firebase/firestore');
 
-
-
-
-
 export default class Chat extends React.Component {
   constructor() {
     super();
-
 
     // Firebase config 
     const firebaseConfig = {
@@ -33,9 +28,26 @@ export default class Chat extends React.Component {
     this.state = {
       messages: [],
     }
+  }
+
+  onCollectionUpdate = (querySnapshot) => {
+    const messages = [];
+    // go through each document
+    querySnapshot.forEach((doc) => {
+      // get the QueryDocumentSnapshot's data
+      let data = doc.data();
+      messages.push({
+        _id: data._id,
+        text: data.text,
+        createdAt: data.createdAt.toDate(),
+        user: data.user,
+      });
+    });
   };
 
   componentDidMount() {
+    this.referenceChatMessages = firebase.firestore().collection('chat-app');
+    this.unsubscribe = this.referenceChatMessages.onSnapshot(this.onCollectionUpdate);
     this.setState({
       messages: [
         {
@@ -58,11 +70,18 @@ export default class Chat extends React.Component {
     });
   }
 
+
+
   onSend(messages = []) {
     this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
     }));
   }
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
 
   renderBubble(props) {
     return (
