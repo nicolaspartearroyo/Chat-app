@@ -30,6 +30,7 @@ export default class Chat extends React.Component {
     }
   }
 
+  //retrieve data and store
   onCollectionUpdate = (querySnapshot) => {
     const messages = [];
     // go through each document
@@ -40,42 +41,53 @@ export default class Chat extends React.Component {
         _id: data._id,
         text: data.text,
         createdAt: data.createdAt.toDate(),
-        user: data.user,
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+        },
       });
     });
   };
 
+  // Add messages 
+  addMessages() {
+    const message = this.state.messages[0];
+    // add a new messages to the collection
+    this.referenceChatMessages.add({
+      uid: this.state.uid,
+      _id: message._id,
+      createdAt: message.createdAt,
+      text: message.text || null,
+      user: message.user,
+      image: message.image || null,
+      location: message.location || null,
+    });
+  }
+
   componentDidMount() {
     this.referenceChatMessages = firebase.firestore().collection('chat-app');
     this.unsubscribe = this.referenceChatMessages.onSnapshot(this.onCollectionUpdate);
+    // Update user state with active user
     this.setState({
-      messages: [
-        {
-          _id: 1,
-          text: "Hello developer",
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            name: "React Native",
-            avatar: "https://placeimg.com/140/140/any",
-          },
-        },
-        {
-          _id: 3,
-          text: 'Hello ' + this.props.route.params.name,
-          createdAt: new Date(),
-          system: true,
-        },
-      ],
+      uid: user.uid,
+      messages: [],
+      user: {
+        _id: user.uid,
+        name: name,
+      }
     });
   }
 
 
-
+  //Send Messages Function
   onSend(messages = []) {
     this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
-    }));
+    }),
+      // Call addMessages to saved on the server
+      () => {
+        this.addMessages();
+      })
   }
 
   componentWillUnmount() {
