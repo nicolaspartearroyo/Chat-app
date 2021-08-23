@@ -9,7 +9,14 @@ require('firebase/firestore');
 export default class Chat extends React.Component {
   constructor() {
     super();
-
+    this.state = {
+      messages: [],
+      uid: 0,
+      loggedInText: "Please wait, you are getting logged in",
+    };
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     // Firebase config 
     const firebaseConfig = {
       apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
@@ -20,26 +27,15 @@ export default class Chat extends React.Component {
       appId: "1:1010968703852:web:1ec491fb0c71c4a89e3949",
       measurementId: "G-CEMW2YZ5YL"
     }
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    this.referenceChatMessages = firebase.firestore().collection("messages");
-
-    this.state = {
-      messages: [],
-      uid: 0,
-      user: {
-        _id: '',
-        name: '',
-      },
-    };
+    this.referenceChatMessagesUser = null;
   }
 
   componentDidMount() {
     let name = this.props.route.params;
     this.props.navigation.setOptions({ title: name });
 
+    //creates a referenmce to message collection and bring it
+    this.referenceChatMessages = firebase.firestore().collection("messages");
 
     // creates the user authentication
     this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
@@ -55,33 +51,45 @@ export default class Chat extends React.Component {
           name: name,
         }
       });
-      this.referenceChatMessages = firebase.firestore().collection('messages');
-      // Listen for collection changes
+      // create a reference to the active user's documents
+      this.referenceChatMessagesUser = firebase
+        .firestore()
+        .collection("messages")
+        .where("uid", "==", this.state.uid);
 
+      // Listen for collection changes
       this.unsubscribe = this.referenceChatMessages
         .orderBy("createdAt", "desc")
         .onSnapshot(this.onCollectionUpdate);
     });
   }
 
-
   componentWillUnmount() {
+    // stop listening to authentication
+    this.authUnsubscribe();
+    // stop listening for changes
     this.unsubscribe();
   }
 
-  //Loads messages from AsyncStorage
-  async getMessages() {
-    let messages = '';
-    try {
-      messages = await AsyncStorage.getItem('messages') || [];
-      this.setState({
-        messages: JSON.parse(messages)
+  //retrieve data and store
+  onCollectionUpdate = (querySnapshot) => {
+    const messages = [];
+    // go through each document
+    querySnapshot.forEach((doc) => {
+      // get the QueryDocumentSnapshot's data
+      let data = doc.data();
+      messages.push({
+        _id: data._id,
+        text: data.text,
+        user: data.user,
+        system: data.system,
+        createdAt: data.createdAt.toDate(),
       });
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
+    });
+    this.setState({
+      messages,
+    });
+  }
 
   // Add messages 
   addMessages() {
@@ -96,29 +104,6 @@ export default class Chat extends React.Component {
     });
   }
 
-  // Save Messages to local storage
-  async saveMessages() {
-    try {
-      await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
-    } catch (error) {
-      console.log(error.message);
-    }
-  }
-
-  //Delete messages from AsyncStorage
-  async deleteMessages() {
-    try {
-      await AsyncStorage.removeItem('messages');
-      this.setState({
-        messages: []
-      })
-    } catch (error) {
-      console.log(error.message);
-    }
-  }
-
-
-
   //Send Messages Function
   onSend(messages = []) {
     this.setState((previousState) => ({
@@ -128,29 +113,6 @@ export default class Chat extends React.Component {
       () => {
         this.addMessages();
       })
-  }
-
-
-  //retrieve data and store
-  onCollectionUpdate = (querySnapshot) => {
-    const messages = [];
-    // go through each document
-    querySnapshot.forEach((doc) => {
-      // get the QueryDocumentSnapshot's data
-      let data = doc.data();
-      messages.push({
-        _id: data._id,
-        text: data.text,
-        createdAt: data.createdAt.toDate(),
-        user: {
-          _id: data.user._id,
-          name: data.user.name,
-        },
-      });
-    });
-    this.setState({
-      messages,
-    });
   }
 
   renderBubble(props) {
