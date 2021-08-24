@@ -4,7 +4,7 @@ import { View, Text, Button, TextInput, ImageBackground, StyleSheet, TouchableOp
 export default class Start extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { name: '' };
+    this.state = { username: '' };
   }
 
   render() {
@@ -22,8 +22,8 @@ export default class Start extends React.Component {
               style={{
                 fontWeight: '300', width: 300, height: 40, borderColor: 'gray', borderWidth: 1, paddingLeft: 15,
               }}
-              onChangeText={(name) => this.setState({ name })}
-              value={this.state.name}
+              onChangeText={(username) => this.setState({ username })}
+              value={this.state.username}
               placeholder='Your Name'
 
             />
@@ -51,7 +51,7 @@ export default class Start extends React.Component {
 
             </View>
             <TouchableOpacity style={styles.startBttn}
-              onPress={() => this.props.navigation.navigate('Chat', { name: this.state.name, backColor: this.state.backColor })}
+              onPress={() => this.props.navigation.navigate('Chat', { username: this.state.username, backColor: this.state.backColor })}
               accessible={true}
               accessibilityRole="button"
               accessibilityLabel="Start Chatting"

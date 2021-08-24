@@ -6,39 +6,40 @@ import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native
 const firebase = require('firebase');
 require('firebase/firestore');
 
+
+// Firebase config 
+const firebaseConfig = {
+  apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
+  authDomain: "chat-app-c6812.firebaseapp.com",
+  projectId: "chat-app-c6812",
+  storageBucket: "chat-app-c6812.appspot.com",
+  messagingSenderId: "1010968703852",
+  appId: "1:1010968703852:web:1ec491fb0c71c4a89e3949",
+  measurementId: "G-CEMW2YZ5YL"
+}
+
 export default class Chat extends React.Component {
   constructor() {
     super();
     this.state = {
       messages: [],
+      // loggedInText: 'Please wait, you are getting logged in',
       uid: 0,
       user: {
         _id: "",
         name: "",
       },
     };
-
-
-    // Firebase config 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
-      authDomain: "chat-app-c6812.firebaseapp.com",
-      projectId: "chat-app-c6812",
-      storageBucket: "chat-app-c6812.appspot.com",
-      messagingSenderId: "1010968703852",
-      appId: "1:1010968703852:web:1ec491fb0c71c4a89e3949",
-      measurementId: "G-CEMW2YZ5YL"
-    }
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
 
     this.referenceChatMessages = firebase.firestore().collection("messages");
+    this.referenceMessageUser = null;
   };
 
   componentDidMount() {
-    //welcome message with your name but its not working right now, used to work before.
-    const name = this.props.route.params.name;
+    const name = this.props.route.params.username;
     this.props.navigation.setOptions({ title: name });
 
     // listen to authentication events
@@ -66,30 +67,9 @@ export default class Chat extends React.Component {
     });
   }
 
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
 
-  //retrieve and store messae on state
-  onCollectionUpdate = (querySnapshot) => {
-    const messages = [];
-    // go through each document
-    querySnapshot.forEach((doc) => {
-      var data = doc.data();
-      messages.push({
-        _id: data._id,
-        text: data.text,
-        createdAt: data.createdAt.toDate(),
-        user: {
-          _id: data.user._id,
-          name: data.user.name,
-        },
-      });
-    });
-    this.setState({
-      messages,
-    });
-  };
+
+
 
   //add message to firebase
   addMessage() {
@@ -115,6 +95,28 @@ export default class Chat extends React.Component {
     );
   }
 
+  //retrieve and store messae on state
+  onCollectionUpdate = (querySnapshot) => {
+    const messages = [];
+    // go through each document
+    querySnapshot.forEach((doc) => {
+      var data = doc.data();
+      messages.push({
+        _id: data._id,
+        text: data.text,
+        createdAt: data.createdAt.toDate(),
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+        },
+      });
+    });
+    this.setState({
+      messages,
+    });
+  };
+
+
   // set message buble color
   renderBubble(props) {
     return (
@@ -129,16 +131,19 @@ export default class Chat extends React.Component {
       />
     )
   }
+  componentWillUnmount() {
+    this.authUnsubscribe();
+    // this.unsubscribe();
+  }
 
   render() {
     return (
       <View style={{ flex: 1 }}>
         <GiftedChat
-          renderBubble={this.renderBubble.bind(this)}
           messages={this.state.messages}
+          renderBubble={this.renderBubble.bind(this)}
           onSend={(messages) => this.onSend(messages)}
           user={this.state.user}
-
         />
         {Platform.OS === 'android' ?
           <KeyboardAvoidingView behavior="height" /> : null
