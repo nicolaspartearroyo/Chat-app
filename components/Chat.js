@@ -39,14 +39,16 @@ export default class Chat extends React.Component {
   };
 
   componentDidMount() {
-    let name = this.props.route.params.name;
+    //welcome message with your name but its not working right now, used to work before.
+    const name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
 
-
+    // listen to authentication events
     this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (!user) {
         firebase.auth().signInAnonymously();
       }
+      // Update user state
       this.setState({
         uid: user.uid,
         messages: [],
@@ -59,7 +61,7 @@ export default class Chat extends React.Component {
         .firestore()
         .collection("messages")
         .where("uid", "==", this.state.uid);
-
+      //listen collections
       this.unsubscribe = this.referenceChatMessages
         .orderBy("createdAt", "desc")
         .onSnapshot(this.onCollectionUpdate);
@@ -70,11 +72,11 @@ export default class Chat extends React.Component {
     this.unsubscribe();
   }
 
+  //retrieve and store messae on state
   onCollectionUpdate = (querySnapshot) => {
     const messages = [];
     // go through each document
     querySnapshot.forEach((doc) => {
-      // get the QueryDocumentSnapshot's data
       var data = doc.data();
       messages.push({
         _id: data._id,
@@ -91,10 +93,9 @@ export default class Chat extends React.Component {
     });
   };
 
-
+  //add message to firebase
   addMessage() {
     const message = this.state.messages[0];
-    // add the new messages to the collection
     this.referenceChatMessages.add({
       uid: this.state.uid,
       _id: message._id,
@@ -104,6 +105,7 @@ export default class Chat extends React.Component {
     });
   }
 
+  //send messages function
   onSend(messages = []) {
     this.setState(
       (previousState) => ({
@@ -115,6 +117,7 @@ export default class Chat extends React.Component {
     );
   }
 
+  // set message buble color
   renderBubble(props) {
     return (
       <Bubble
@@ -129,7 +132,6 @@ export default class Chat extends React.Component {
   }
 
   render() {
-
     return (
       <View style={{ flex: 1 }}>
         <GiftedChat
