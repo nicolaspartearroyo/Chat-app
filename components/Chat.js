@@ -12,11 +12,14 @@ export default class Chat extends React.Component {
     this.state = {
       messages: [],
       uid: 0,
-      loggedInText: "Please wait, you are getting logged in",
+      loggedInText: "Logging in...",
+      user: {
+        _id: "",
+        name: "",
+      },
     };
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+
+
     // Firebase config 
     const firebaseConfig = {
       apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
@@ -27,37 +30,37 @@ export default class Chat extends React.Component {
       appId: "1:1010968703852:web:1ec491fb0c71c4a89e3949",
       measurementId: "G-CEMW2YZ5YL"
     }
-    this.referenceChatMessagesUser = null;
-  }
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    this.referenceChatMessages = firebase.firestore().collection("messages");
+  };
 
   componentDidMount() {
-    let name = this.props.route.params;
+    //welcome message with your name but its not working right now, used to work before.
+    const name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
 
-    //creates a referenmce to message collection and bring it
-    this.referenceChatMessages = firebase.firestore().collection("messages");
-
-    // creates the user authentication
+    // listen to authentication events
     this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (!user) {
         firebase.auth().signInAnonymously();
       }
-      // Update user state with active user
+      // Update user state
       this.setState({
         uid: user.uid,
         messages: [],
         user: {
           _id: user.uid,
           name: name,
-        }
+        },
       });
-      // create a reference to the active user's documents
-      this.referenceChatMessagesUser = firebase
+      this.referenceMessagesUser = firebase
         .firestore()
         .collection("messages")
         .where("uid", "==", this.state.uid);
-
-      // Listen for collection changes
+      //listen collections
       this.unsubscribe = this.referenceChatMessages
         .orderBy("createdAt", "desc")
         .onSnapshot(this.onCollectionUpdate);
@@ -65,56 +68,55 @@ export default class Chat extends React.Component {
   }
 
   componentWillUnmount() {
-    // stop listening to authentication
-    this.authUnsubscribe();
-    // stop listening for changes
     this.unsubscribe();
   }
 
-  //retrieve data and store
+  //retrieve and store messae on state
   onCollectionUpdate = (querySnapshot) => {
     const messages = [];
     // go through each document
     querySnapshot.forEach((doc) => {
-      // get the QueryDocumentSnapshot's data
-      let data = doc.data();
+      var data = doc.data();
       messages.push({
         _id: data._id,
         text: data.text,
-        user: data.user,
-        system: data.system,
         createdAt: data.createdAt.toDate(),
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+        },
       });
     });
     this.setState({
       messages,
     });
-  }
+  };
 
-  // Add messages 
-  addMessages() {
+  //add message to firebase
+  addMessage() {
     const message = this.state.messages[0];
-    // add a new messages to the collection
     this.referenceChatMessages.add({
       uid: this.state.uid,
       _id: message._id,
+      text: message.text,
       createdAt: message.createdAt,
-      text: message.text || null,
       user: message.user,
     });
   }
 
-  //Send Messages Function
+  //send messages function
   onSend(messages = []) {
-    this.setState((previousState) => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }),
-      // Call addMessages to saved on the server
+    this.setState(
+      (previousState) => ({
+        messages: GiftedChat.append(previousState.messages, messages),
+      }),
       () => {
-        this.addMessages();
-      })
+        this.addMessage();
+      }
+    );
   }
 
+  // set message buble color
   renderBubble(props) {
     return (
       <Bubble
@@ -130,17 +132,14 @@ export default class Chat extends React.Component {
   }
 
   render() {
-    let name = this.props.route.params.name;
-    this.props.navigation.setOptions({ title: name });
     return (
       <View style={{ flex: 1 }}>
         <GiftedChat
           renderBubble={this.renderBubble.bind(this)}
           messages={this.state.messages}
           onSend={(messages) => this.onSend(messages)}
-          user={{
-            _id: 1,
-          }}
+          user={this.state.user}
+
         />
         {Platform.OS === 'android' ?
           <KeyboardAvoidingView behavior="height" /> : null
