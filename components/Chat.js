@@ -7,9 +7,6 @@ const firebase = require('firebase');
 require('firebase/firestore');
 
 
-
-
-
 export default class Chat extends React.Component {
   constructor() {
     super();
@@ -28,7 +25,8 @@ export default class Chat extends React.Component {
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    this.referenceChatMessages = firebase.firestore().collection("chat-app");
+
+    this.referenceChatMessages = firebase.firestore().collection("messages");
 
     this.state = {
       messages: [],
@@ -36,30 +34,39 @@ export default class Chat extends React.Component {
   };
 
   componentDidMount() {
-    this.setState({
-      messages: [
-        {
-          _id: 1,
-          text: "Hello developer",
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            name: "React Native",
-            avatar: "https://placeimg.com/140/140/any",
-          },
-        },
-        {
-          _id: 3,
-          text: 'Hello ' + this.props.route.params.name,
-          createdAt: new Date(),
-          system: true,
-        },
-      ],
 
-    });
+
+    this.referenceChatMessages = firebase.firestore().collection("messages");
+    this.unsubscribe = this.referenceChatMessages.onSnapshot(this.onCollectionUpdate)
     let name = this.props.route.params.name;
     this.props.navigation.setOptions({ title: name });
   }
+
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
+  onCollectionUpdate = (querySnapshot) => {
+    const messages = [];
+    // go through each document
+    querySnapshot.forEach((doc) => {
+      // get the QueryDocumentSnapshot's data
+      var data = doc.data();
+      messages.push({
+        _id: data._id,
+        text: data.text,
+        createdAt: data.createdAt.toDate(),
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+        },
+      });
+    });
+    this.setState({
+      messages,
+    });
+  };
 
   onSend(messages = []) {
     this.setState((previousState) => ({
@@ -81,15 +88,15 @@ export default class Chat extends React.Component {
   }
 
   render() {
+
     return (
       <View style={{ flex: 1 }}>
         <GiftedChat
           renderBubble={this.renderBubble.bind(this)}
           messages={this.state.messages}
           onSend={(messages) => this.onSend(messages)}
-          user={{
-            _id: 1,
-          }}
+          user={this.state.user}
+
         />
         {Platform.OS === 'android' ?
           <KeyboardAvoidingView behavior="height" /> : null
