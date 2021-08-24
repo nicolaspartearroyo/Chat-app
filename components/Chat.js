@@ -6,7 +6,6 @@ import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native
 const firebase = require('firebase');
 require('firebase/firestore');
 
-
 // Firebase config 
 const firebaseConfig = {
   apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
@@ -23,7 +22,6 @@ export default class Chat extends React.Component {
     super();
     this.state = {
       messages: [],
-      // loggedInText: 'Please wait, you are getting logged in',
       uid: 0,
       user: {
         _id: "",
@@ -59,6 +57,7 @@ export default class Chat extends React.Component {
       this.referenceMessagesUser = firebase
         .firestore()
         .collection("messages")
+
         .where("uid", "==", this.state.uid);
       //listen collections
       this.unsubscribe = this.referenceChatMessages
@@ -66,10 +65,6 @@ export default class Chat extends React.Component {
         .onSnapshot(this.onCollectionUpdate);
     });
   }
-
-
-
-
 
   //add message to firebase
   addMessage() {
@@ -115,7 +110,6 @@ export default class Chat extends React.Component {
       messages,
     });
   };
-
 
   // set message buble color
   renderBubble(props) {
