@@ -52,35 +52,36 @@ export default class Chat extends React.Component {
   };
 
   componentDidMount() {
-    const name = this.props.route.params.username;
-    this.props.navigation.setOptions({ title: name });
-
-    // listen to authentication events
-    this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        firebase.auth().signInAnonymously();
-      }
-      // Update user state
-      this.setState({
-        uid: user.uid,
-        messages: [],
-        user: {
-          _id: user.uid,
-          name: name,
-        },
-      });
-      this.referenceMessagesUser = firebase
-        .firestore()
-        .collection("messages")
-
-        .where("uid", "==", this.state.uid);
-      //listen collections
-      this.unsubscribe = this.referenceChatMessages
-        .orderBy("createdAt", "desc")
-        .onSnapshot(this.onCollectionUpdate);
-    });
     // function that loads the messages from asyncStorage
     this.getMessages();
+
+    // const name = this.props.route.params.username;
+    // this.props.navigation.setOptions({ title: name });
+
+    // // listen to authentication events
+    // this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
+    //   if (!user) {
+    //     firebase.auth().signInAnonymously();
+    //   }
+    //   // Update user state
+    //   this.setState({
+    //     uid: user.uid,
+    //     messages: [],
+    //     user: {
+    //       _id: user.uid,
+    //       name: name,
+    //     },
+    //   });
+    //   this.referenceMessagesUser = firebase
+    //     .firestore()
+    //     .collection("messages")
+
+    //     .where("uid", "==", this.state.uid);
+    //   //listen collections
+    //   this.unsubscribe = this.referenceChatMessages
+    //     .orderBy("createdAt", "desc")
+    //     .onSnapshot(this.onCollectionUpdate);
+    // });
 
   }
 
@@ -104,12 +105,20 @@ export default class Chat extends React.Component {
       this.saveMessages();
     });
   }
-
   //save messages function
   async saveMessages() {
     try {
       //convert your messages object into a string:
       await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  //function to delete messages
+  async deleteMessages() {
+    try {
+      await AsyncStorage.removeItem('messages');
     } catch (error) {
       console.log(error.message);
     }
@@ -151,7 +160,7 @@ export default class Chat extends React.Component {
     )
   }
   componentWillUnmount() {
-    this.authUnsubscribe();
+    // this.authUnsubscribe();
     // this.unsubscribe();
   }
 
