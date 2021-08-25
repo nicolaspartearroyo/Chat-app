@@ -105,6 +105,15 @@ export default class Chat extends React.Component {
     });
   }
 
+  //save messages function
+  async saveMessages() {
+    try {
+      await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   //retrieve and store messae on state
   onCollectionUpdate = (querySnapshot) => {
     const messages = [];
