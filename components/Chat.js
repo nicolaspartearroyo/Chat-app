@@ -6,6 +6,9 @@ import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native
 const firebase = require('firebase');
 require('firebase/firestore');
 
+//import async storage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // Firebase config 
 const firebaseConfig = {
   apiKey: "AIzaSyCB3io7lP6Be0d3TV4YI-LVQ-Kqk6yFB1E",
@@ -36,6 +39,18 @@ export default class Chat extends React.Component {
     this.referenceMessageUser = null;
   };
 
+  async getMessages() {
+    let messages = '';
+    try {
+      messages = await AsyncStorage.getItem('messages') || [];
+      this.setState({
+        messages: JSON.parse(messages)
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   componentDidMount() {
     const name = this.props.route.params.username;
     this.props.navigation.setOptions({ title: name });
@@ -64,6 +79,9 @@ export default class Chat extends React.Component {
         .orderBy("createdAt", "desc")
         .onSnapshot(this.onCollectionUpdate);
     });
+    // function that loads the messages from asyncStorage
+    this.getMessages();
+
   }
 
   //add message to firebase
