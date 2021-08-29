@@ -6,6 +6,11 @@ import NetInfo from '@react-native-community/netinfo';
 import { Bubble, GiftedChat, InputToolbar } from "react-native-gifted-chat";
 import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native';
 
+import { Constants, MapView, Location, Permissions } from 'expo';
+
+// circle button component
+import CustomActions from './CustomActions';
+
 //import firebase
 const firebase = require('firebase');
 require('firebase/firestore');
@@ -28,11 +33,8 @@ export default class Chat extends React.Component {
     this.state = {
       messages: [],
       uid: 0,
-      user: {
-        _id: "",
-        name: "",
-      },
-      isConnected: false
+      isConnected: false,
+      image: null,
     };
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
@@ -74,12 +76,7 @@ export default class Chat extends React.Component {
           }
           this.setState({
             uid: user.uid,
-            messages: [],
-            user: {
-              _id: user.uid,
-              name: name,
-            },
-            isConnected: true
+            messages: []
           });
 
           // Create reference to messages of active users
@@ -113,27 +110,53 @@ export default class Chat extends React.Component {
     this.unsubscribe();
   }
 
+  handleConnectivityChange = (state) => {
+    const isConnected = state.isConnected;
+    if (isConnected == true) {
+      this.setState({
+        isConnected: true,
+      });
+      this.unsubscribe = this.referenceChatMessages
+        .orderBy("createdAt", "desc")
+        .onSnapshot(this.onCollectionUpdate);
+    } else {
+      this.setState({
+        isConnected: false,
+      });
+    }
+  };
+
   //add message to firebase
-  addMessage() {
+  addMessage = () => {
     const message = this.state.messages[0];
     this.referenceChatMessages.add({
-      uid: this.state.uid,
       _id: message._id,
-      text: message.text,
+      text: message.text || "",
       createdAt: message.createdAt,
       user: message.user,
+      image: message.image || null,
+      location: message.location || null,
     });
-  }
+  };
+  //define title in navigation bar
+  static navigationOptions = ({ navigation }) => {
+    return {
+      title: `${navigation.state.params.userName}'s Chat`,
+    };
+  };
 
   //send messages function
-  onSend(messages = []) {
-    this.setState(previousState => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }), () => {
-      this.addMessage();
-      this.saveMessages();
-    });
-  }
+  onSend = (messages = []) => {
+    this.setState(
+      (previousState) => ({
+        messages: GiftedChat.append(previousState.messages, messages),
+      }),
+      () => {
+        this.addMessage();
+        this.saveMessages();
+      }
+    );
+  };
   //save messages function
   async saveMessages() {
     try {
@@ -167,6 +190,8 @@ export default class Chat extends React.Component {
           _id: data.user._id,
           name: data.user.name,
         },
+        image: data.image || null,
+        location: data.location || null,
       });
     });
     this.setState({
@@ -179,36 +204,63 @@ export default class Chat extends React.Component {
     return (
       <Bubble
         {...props}
-        wrapperStyle={{
-          right: {
-            backgroundColor: this.props.route.params.backColor
-          }
-        }
-        }
+      // wrapperStyle={{
+      //   right: {
+      //     backgroundColor: this.props.route.params.backColor
+      //   }
+      // }
+      // }
       />
     )
   }
 
   //If offline, dont render the input toolbar
-  renderInputToolbar(props) {
-    if (this.state.isConnected == false) {
+  renderInputToolbar = (props) => {
+    console.log("renderInputToolbar --> props", props.isConnected);
+    if (props.isConnected === false) {
+      return <InputToolbar {...props} />
     } else {
+      return <InputToolbar {...props} />;
+    }
+  };
+
+  renderCustomActions = (props) => {
+    return <CustomActions {...props} />;
+  };
+
+  //custom map view
+  renderCustomView(props) {
+    const { currentMessage } = props;
+    if (currentMessage.location) {
       return (
-        <InputToolbar
-          {...props}
+        <MapView
+          style={{ width: 150, height: 100, borderRadius: 13, margin: 3 }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
         />
       );
     }
+    return null;
   }
-
-
 
   render() {
     return (
-      <View style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: this.props.navigation.state.params.backgroundColor,
+        }}
+      >
         <GiftedChat
           messages={this.state.messages}
-          renderBubble={this.renderBubble.bind(this)}
+          isConnected={this.state.isConnected}
+          renderBubble={this.renderBubble}
+          renderActions={this.renderCustomActions}
+          renderCustomView={this.renderCustomView}
           onSend={(messages) => this.onSend(messages)}
           renderInputToolbar={this.renderInputToolbar.bind(this)}
           user={this.state.user}
