@@ -4,7 +4,7 @@
 provide users with a chat interface and options to share images and their
 location.</h4>
 
-Key Features
+<h2>Key Features</h2>
 - A page where users can enter their name and choose a background color for the chat screen
 before joining the chat.
 - A page displaying the conversation, as well as an input field and submit button.
@@ -13,11 +13,11 @@ and location data.
 - Data gets stored online and offline.
 
 <h2>Tools Used</h2>
-- React Native
-- Expo
-- Android Studio
-- Google Firestore Database
-- Gifted Chat
+- React Native.
+- Expo.
+- Android Studio.
+- Google Firestore Database.
+- Gifted Chat.
 
 <h2>Getting Started<h2>
 Requirements:
@@ -35,7 +35,7 @@ npm install
 
   expo start
 
-Download Expo app on your mobile phone. Run npm start on the forked file root in your terminal. Scan the QR code. When bundle is ready you will see the app.
+Download Expo app on your mobile phone. Run expo start on the forked file root in your terminal. Scan the QR code. When bundle is ready you will see the app.
 
-Download Android Simulator or XCode which include an iOS Sumiulator. In the browser after run npm start on the forked file root in your terminal, select "Run on iOS Simulator" or "Run on Android device/emulator".
+Download Android Simulator or XCode which include an iOS Sumiulator. In the browser after run expo start on the forked file root in your terminal, select "Run on iOS Simulator" or "Run on Android device/emulator".
 
