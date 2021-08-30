@@ -13,13 +13,13 @@ and location data.
 - Data gets stored online and offline.
 
 <h2>Tools Used</h2>
-- React Native.
-- Expo.
-- Android Studio.
-- Google Firestore Database.
-- Gifted Chat.
+<li>React Native</li>
+<li>Expo</li>
+- Android Studio
+- Google Firestore Database
+- Gifted Chat
 
-<h2>Getting Started<h2>
+<h2>Getting Started</h2>
 Requirements:
 - Node.js
 - Expo Command Line Interface
