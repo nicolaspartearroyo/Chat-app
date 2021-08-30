@@ -25,12 +25,12 @@ and location data.</li>
 <li>Node.js</li>
 <li>Expo Command Line Interface</li>
 
-npm install --global expo-cli
+<pre>npm install --global expo-cli</pre>
 
 <h2>Setup</h2>
 Fork this repository and run npm install for install all dependecies.
 
-npm install
+<pre>npm install</pre>
 
  <h2>Running app</h2>
 
