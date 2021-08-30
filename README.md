@@ -36,7 +36,11 @@ Fork this repository and run npm install for install all dependecies.
 
 <pre>expo start</pre>
 
-Download Expo app on your mobile phone. Run expo start on the forked file root in your terminal. Scan the QR code. When bundle is ready you will see the app.
-
-Download Android Simulator or XCode which include an iOS Sumiulator. In the browser after run expo start on the forked file root in your terminal, select "Run on iOS Simulator" or "Run on Android device/emulator".
+<li>Download Expo app on your mobile phone.</li> 
+<li>Run expo start on the forked file root in your terminal.</li> 
+<li>Scan the QR code.</li> 
+<li>When bundle is ready you will see the app.</li>
+<p>Or...</p>
+<li>Download Android Simulator or XCode which include an iOS Sumiulator.</li> 
+<li>In the browser after run expo start on the forked file root in your terminal, select "Run on iOS Simulator" or "Run on Android device/emulator".</li>
 
