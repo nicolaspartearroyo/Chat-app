@@ -6,7 +6,7 @@ import NetInfo from '@react-native-community/netinfo';
 import { Bubble, GiftedChat, InputToolbar } from "react-native-gifted-chat";
 import { View, Button, Text, Platform, KeyboardAvoidingView } from 'react-native';
 
-import { Constants, MapView, Location, Permissions } from 'expo';
+import MapView from 'react-native-maps';
 
 // circle button component
 import CustomActions from './CustomActions';
@@ -35,6 +35,7 @@ export default class Chat extends React.Component {
       uid: 0,
       isConnected: false,
       image: null,
+      location: null
     };
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
@@ -57,8 +58,8 @@ export default class Chat extends React.Component {
   };
 
   componentDidMount() {
-    const name = this.props.route.params.username;
-    // this.props.navigation.setOptions({ title: name });
+    let name = this.props.route.params.username;
+    this.props.navigation.setOptions({ title: name });
 
     // Check online status of user
     NetInfo.fetch().then((connection) => {
@@ -204,16 +205,14 @@ export default class Chat extends React.Component {
     return (
       <Bubble
         {...props}
-      // wrapperStyle={{
-      //   right: {
-      //     backgroundColor: this.props.route.params.backColor
-      //   }
-      // }
-      // }
+        wrapperStyle={{
+          right: {
+            backgroundColor: "grey"
+          }
+        }}
       />
     )
   }
-
   //If offline, dont render the input toolbar
   renderInputToolbar = (props) => {
     console.log("renderInputToolbar --> props", props.isConnected);
@@ -248,11 +247,13 @@ export default class Chat extends React.Component {
   }
 
   render() {
+    let backColor = this.props.route.params.backColor;
+
     return (
       <View
         style={{
           flex: 1,
-          backgroundColor: this.props.navigation.state.params.backgroundColor,
+          backgroundColor: backColor,
         }}
       >
         <GiftedChat

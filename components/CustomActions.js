@@ -8,18 +8,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
-import firebase from 'firebase';
-import firestore from 'firebase';
 
-// const firebase = require("firebase");
-// require("firebase/firestore");
+const firebase = require("firebase");
+require("firebase/firestore");
 
 export default class CustomActions extends React.Component {
-  /**
-   * Let the user pick an image from the device's image library
-   * @function imagePicker
-   * @async
-   */
+
+  //Let the user pick an image from the device's image library 
   imagePicker = async () => {
     // expo permission
     const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -40,11 +35,7 @@ export default class CustomActions extends React.Component {
     }
   };
 
-  /**
-   * Let the user take a photo with device's camera
-   * @function takePhoto
-   * @async
-   */
+  // Let the user take a photo with device's camera
   takePhoto = async () => {
     const { status } = await Permissions.askAsync(
       Permissions.CAMERA,
@@ -66,11 +57,8 @@ export default class CustomActions extends React.Component {
     }
   };
 
-  /**
-   * get the location of the user by using GPS
-   * @function getLocation
-   * @async
-   */
+  // get the location of the user by using GPS
+
   getLocation = async () => {
     try {
       const { status } = await Permissions.askAsync(Permissions.LOCATION);
@@ -94,11 +82,7 @@ export default class CustomActions extends React.Component {
     }
   };
 
-  /**
-   * Upload images to firebase
-   * @function uploadImageFetch
-   * @async
-   */
+  //Upload images to firebase
   uploadImageFetch = async (uri) => {
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -126,10 +110,7 @@ export default class CustomActions extends React.Component {
     return await snapshot.ref.getDownloadURL();
   };
 
-  /**
-   * function that handles communication features
-   * @function onActionPress
-   */
+  //function that handles communication features
   onActionPress = () => {
     const options = [
       "Choose From Library",
