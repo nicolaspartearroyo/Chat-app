@@ -34,7 +34,7 @@ npm install
 
  <h2>Running app</h2>
 
-  expo start
+<pre>expo start</pre>
 
 Download Expo app on your mobile phone. Run expo start on the forked file root in your terminal. Scan the QR code. When bundle is ready you will see the app.
 
